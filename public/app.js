@@ -34,8 +34,8 @@ function renderizarVitrine(anuncios) {
       <div class="anuncio-card">
         <img class="foto" src="/uploads/${a.imagem}" />
         <div class="tooltip">Anunciado por: @${a.vendedor_usuario}<br/>Local: ${
-        a.local
-      }</div>
+          a.local
+        }</div>
         <div class="rodape-card">
           <span class="titulo">${a.titulo}</span>
           <div class="linha-preco">
@@ -206,7 +206,6 @@ document
 document
   .getElementById('btnConfirmarLogin')
   .addEventListener('click', async () => {
-    // ESTE ERA O BUG: usuario/senha nunca eram lidos dos inputs.
     const usuario = document.getElementById('loginUsuario').value.trim();
     const senha = document.getElementById('loginSenha').value.trim();
 
@@ -249,9 +248,8 @@ function atualizarHeaderLogado() {
   document.getElementById('nomeUsuario').textContent = usuarioAtual.usuario;
 
   if (usuarioAtual.foto_perfil) {
-    document.getElementById(
-      'fotoPerfil',
-    ).src = `/uploads/${usuarioAtual.foto_perfil}`;
+    document.getElementById('fotoPerfil').src =
+      `/uploads/${usuarioAtual.foto_perfil}`;
   }
 
   const btnPerfil = document.getElementById('btnVerPerfil');
@@ -265,7 +263,84 @@ function atualizarHeaderLogado() {
   carregarVitrine();
 }
 
-// --- 4. BUSCA POR MODELO ---
+// --- 4 CRIAR CONTA ---
+const modalCriarConta = document.getElementById('modalCriarConta');
+
+function abrirModalCriarConta() {
+  document.getElementById('cadNome').value = '';
+  document.getElementById('cadUsuario').value = '';
+  document.getElementById('cadSenha').value = '';
+  document.getElementById('cadTelefone').value = '';
+  document.getElementById('erroCriarConta').textContent = '';
+  modalCriarConta.classList.remove('oculto');
+}
+
+function fecharModalCriarConta() {
+  modalCriarConta.classList.add('oculto');
+}
+
+// Abrir modal de criar conta através do link no modal de login
+document
+  .getElementById('btnAbrirCriarConta')
+  ?.addEventListener('click', (e) => {
+    e.preventDefault();
+    fecharModalLogin();
+    abrirModalCriarConta();
+  });
+
+// Botões para fechar
+document
+  .getElementById('fecharModalCriarConta')
+  ?.addEventListener('click', fecharModalCriarConta);
+document
+  .getElementById('btnCancelarCriarConta')
+  ?.addEventListener('click', fecharModalCriarConta);
+
+// Confirmar registo de utilizador
+document
+  .getElementById('btnConfirmarCriarConta')
+  ?.addEventListener('click', async () => {
+    const nome = document.getElementById('cadNome').value.trim();
+    const usuario = document.getElementById('cadUsuario').value.trim();
+    const senha = document.getElementById('cadSenha').value.trim();
+    const telefone = document.getElementById('cadTelefone').value.trim();
+    const campoFoto = document.getElementById('cadFoto');
+    const erroElemento = document.getElementById('erroCriarConta');
+
+    erroElemento.textContent = '';
+
+    if (!nome || !usuario || !senha || !telefone) {
+      erroElemento.textContent = 'Preencha todos os campos do formulário.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('nome', nome);
+    formData.append('usuario', usuario);
+    formData.append('senha', senha);
+    formData.append('telefone', telefone);
+
+    if (campoFoto.files[0]) {
+      formData.append('foto_perfil', campoFoto.files[0]);
+    }
+
+    const resp = await fetch('/api/usuarios', {
+      method: 'POST',
+      body: formData, // Envia como FormData para processar o arquivo
+    });
+
+    if (!resp.ok) {
+      const dados = await resp.json();
+      erroElemento.textContent = dados.erro || 'Erro ao criar conta.';
+      return;
+    }
+
+    alert('Conta criada com sucesso! Faça login.');
+    fecharModalCriarConta();
+    abrirModalLogin();
+  });
+
+// --- 5. BUSCA POR MODELO ---
 function executarBusca() {
   const termo = document.getElementById('inputBusca').value.trim();
   carregarVitrine(termo);
@@ -280,7 +355,7 @@ if (iconeLupa) {
   iconeLupa.addEventListener('click', executarBusca);
 }
 
-// --- 5. PAINEL DE PERFIL ---
+// --- 6. PAINEL DE PERFIL ---
 document.getElementById('btnVerPerfil').addEventListener('click', async () => {
   const resp = await fetch(`/api/perfil/${usuarioAtual.id}`);
   const dados = await resp.json();
@@ -314,7 +389,7 @@ document.getElementById('fecharPainel').addEventListener('click', () => {
   document.getElementById('painelPerfil').classList.add('oculto');
 });
 
-// --- 6. CADASTRO DE NOVO ANÚNCIO (Com validações individuais) ---
+// --- 7. CADASTRO DE NOVO ANÚNCIO (Com validações individuais) ---
 document
   .getElementById('formCadastro')
   .addEventListener('submit', async (e) => {

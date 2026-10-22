@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -48,9 +48,63 @@
         <input id="loginSenha" type="password" placeholder="Digite sua senha" />
         <span id="erroSenha" class="erro"></span>
         <span id="erroLogin" class="erro"></span>
+
+        <p
+          class="texto-cadastro"
+          style="margin: 10px 0; text-align: center; font-size: 14px"
+        >
+          Não tem uma conta?
+          <a
+            href="#"
+            id="btnAbrirCriarConta"
+            style="
+              color: #0044cc;
+              font-weight: bold;
+              text-decoration: underline;
+            "
+            >Criar conta</a
+          >
+        </p>
+
         <div class="modal-botoes">
           <button id="btnCancelar" class="btn-outline">Cancelar</button>
           <button id="btnConfirmarLogin" class="btn-preto">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Criar Conta -->
+    <div id="modalCriarConta" class="overlay oculto">
+      <div class="modal">
+        <div class="modal-topo">
+          <h2>Criar Conta</h2>
+          <button id="fecharModalCriarConta" class="btn-fechar">×</button>
+        </div>
+        <input id="cadNome" placeholder="Seu nome completo" />
+        <input id="cadUsuario" placeholder="Nome de usuário" />
+        <input id="cadSenha" type="password" placeholder="Crie uma senha" />
+        <input id="cadTelefone" placeholder="Telefone / WhatsApp" />
+        <div class="grupo-input" style="margin-top: 10px">
+          <label
+            for="cadFoto"
+            style="
+              font-size: 13px;
+              display: block;
+              margin-bottom: 4px;
+              text-align: left;
+            "
+            >Foto de Perfil</label
+          >
+          <input id="cadFoto" type="file" accept=".jpg,.jpeg,.png,.gif,.webp" />
+        </div>
+        <span id="erroCriarConta" class="erro"></span>
+        <div class="modal-botoes">
+          <button id="btnCancelarCriarConta" class="btn-outline">
+            Cancelar
+          </button>
+          <button id="btnConfirmarCriarConta" class="btn-preto">
+            Cadastrar
+          </button>
         </div>
       </div>
     </div>

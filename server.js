@@ -2,17 +2,21 @@ const express = require('express');
 const { Pool } = require('pg');
 const multer = require('multer');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 app.use(express.static('public')); // serve index.html, style.css, app.js, assets, uploads
 
-// Conexão com o Supabase via Variável de Ambiente
+// Verifica se a URL da base de dados aponta para a máquina local
+const isLocalhost =
+  process.env.DATABASE_URL?.includes('localhost') ||
+  process.env.DATABASE_URL?.includes('127.0.0.1');
+
+// Conexão flexível: ativa SSL para o Supabase/Render e desativa para o Postgres local
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // Obrigatório para conexões SSL na nuvem
-  },
+  ssl: isLocalhost ? false : { rejectUnauthorized: false },
 });
 
 const storage = multer.diskStorage({
@@ -47,6 +51,40 @@ app.get('/api/anuncios', async (req, res) => {
   res.json(rows);
 });
 
+// Cadastrar novo usuário
+app.post('/api/usuarios', upload.single('foto_perfil'), async (req, res) => {
+  const { nome, usuario, senha, telefone } = req.body;
+  const foto_perfil = req.file ? req.file.filename : null;
+
+  if (!nome || !usuario || !senha || !telefone) {
+    return res.status(400).json({ erro: 'Todos os campos são obrigatórios.' });
+  }
+
+  try {
+    const usuarioExistente = await pool.query(
+      'SELECT id FROM usuarios WHERE usuario = $1',
+      [usuario],
+    );
+
+    if (usuarioExistente.rows.length > 0) {
+      return res
+        .status(400)
+        .json({ erro: 'Este nome de usuário já está em uso.' });
+    }
+
+    const { rows } = await pool.query(
+      'INSERT INTO usuarios (nome, usuario, senha, telefone, foto_perfil) VALUES ($1, $2, $3, $4, $5) RETURNING id, nome, usuario, telefone, foto_perfil',
+      [nome, usuario, senha, telefone, foto_perfil],
+    );
+
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error('Erro ao cadastrar usuário:', err);
+    res.status(500).json({ erro: 'Erro interno ao criar conta.' });
+  }
+});
+
+// Realizar login
 app.post('/api/login', async (req, res) => {
   const { usuario, senha } = req.body;
   const { rows } = await pool.query(
